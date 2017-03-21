@@ -11,7 +11,8 @@ class WeatherApp():
 	def __init__(self):
 		self.sense = SenseHat()
 		self.pattern_ctrl = PatternInputController(self.sense)
-		
+		signal.signal(signal.SIGINT, self.sigint_handler)
+
 		self.sender = "diegogarcialozano95@gmail.com"
 		self.pwd = "weatherapp"
 
@@ -44,7 +45,8 @@ class WeatherApp():
 			#try:
 				#user_logged = self.login(username,pattern)
 			self.sense.load_image("res/success.png")
-			print "\nWelcome " + username + " !"
+			print "\n\nWelcome " + username + " !"
+			print "\nPress Ctrl + C to  logout"
 			time.sleep(2)
 			self.sense.clear()
 			self.record_weather() #pasar usuario
@@ -77,16 +79,21 @@ class WeatherApp():
 		raise Exception("Invalid credentials")
 
 	def record_weather(self):
-		wait = 30
-		while True:
+		self.logout = False
+		while self.logout == False:
+			wait = 5
+			timer = 0
+
 			temperature = self.sense.get_temperature()
 			pressure = self.sense.get_humidity()
 			humidity = self.sense.get_pressure()
 
 			self.send_mail(temperature,pressure,humidity)
 
-			for i in range (wait):
+			while self.logout == False and timer < wait:
 				self.animation()
+				timer += 1
+		self.logout = False
 			
 	def animation(self):
 		"One second animation"
@@ -98,6 +105,9 @@ class WeatherApp():
 		time.sleep(0.25)
 		self.sense.load_image("res/cloud2.png")
 		time.sleep(0.25)
+
+	def sigint_handler(self, signum, frame):
+		self.logout = True
 		
 if __name__ == "__main__":
 	weather_app = WeatherApp()
