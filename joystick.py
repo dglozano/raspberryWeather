@@ -25,7 +25,6 @@ patterns = [patternDiego, patternPavan]
 
 def main(argv):
 	global trying
-	init_sense()
 	attempts = 0
 	user_found = False
 	while user_found == False and attempts < MAX_ATTEMPTS:
@@ -35,7 +34,8 @@ def main(argv):
 			user_found = True
 		except:
 			attempts += 1
-	
+	init_sense()
+	sense.load_image("start_pattern.png")
 	attempts = 0
 	if user_found == True:
 		print("Please, enter your pattern in the LED Matrix")
@@ -117,5 +117,4 @@ def init_sense():
 	refresh()
 
 if __name__ == "__main__":
-	sense.load_image("start_pattern.png")
 	main(sys.argv)
