@@ -41,7 +41,7 @@ class WeatherApp():
 			print "\n  - Push the joystick to select/deselect"
 			print "\n  - Press any place along the green lines to submit"
 			pattern = self.pattern_ctrl.get_input_pattern()
-
+			pattern = self.pattern_to_string(pattern)
 			#try:
 				#user_logged = self.login(username,pattern)
 			self.sense.load_image("res/success.png")
@@ -108,6 +108,11 @@ class WeatherApp():
 
 	def sigint_handler(self, signum, frame):
 		self.logout = True
+
+	def pattern_to_string(self, pattern):
+		for i in range(len(pattern)):
+			pattern[i] = "Y" if pattern[i] == True else "N"
+		return ''.join(pattern)
 		
 if __name__ == "__main__":
 	weather_app = WeatherApp()
