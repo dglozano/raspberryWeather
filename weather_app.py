@@ -113,7 +113,8 @@ class WeatherApp():
 
 	def login(self, username, pattern):
 		cnx = mysql.connector.connect(user='root', password='p@ssword',host='127.0.0.1',database='weather_app')
-		query = ("SELECT name,email,record_time FROM users WHERE users.name = '{}' AND users.pattern = '{}';".format(username,pattern))
+		# This is unsafe
+		query = "SELECT name,email,record_time FROM users WHERE users.name = '%s' AND users.pattern = '%s';" % (username,pattern)
 		cursor = cnx.cursor()
 		cursor.execute(query)
 		result = []
