@@ -4,7 +4,7 @@ from smtplib import SMTP, SMTPException
 import time
 import signal
 import os
-
+import mysql.connector
 
 class WeatherApp():
 
@@ -30,7 +30,7 @@ class WeatherApp():
 			self.sense.clear()
 			print "Enter your Username and then your pattern in the Raspberry Pi"
 			print "Type 'exit' to close \n"
-
+			
 			username = raw_input("Username: ")
 			if username == "exit":
 				print "\nBye!!"
@@ -42,20 +42,21 @@ class WeatherApp():
 			print "\n  - Press any place along the green lines to submit"
 			pattern = self.pattern_ctrl.get_input_pattern()
 			pattern = self.pattern_to_string(pattern)
-			#try:
-				#user_logged = self.login(username,pattern)
-			self.sense.load_image("res/success.png")
-			print "\n\nWelcome " + username + " !"
-			print "\nPress Ctrl + C to  logout"
-			time.sleep(2)
-			self.sense.clear()
-			self.record_weather() #pasar usuario
-			#except Exception as e:
-			#	print e
-			#	self.sense.load_image("res/error.png")
-			#	print "Invalid credentials"
-			#	time.sleep(2)
-			#	self.sense.clear()
+			try:
+				self.login(username,pattern)
+				self.sense.load_image("res/success.png")
+				print "\n\nWelcome " + self.user_logged['name'] + " !"
+				print "\nPress Ctrl + C to  logout"
+				time.sleep(2)
+				self.sense.clear()
+				self.record_weather()
+			except Exception as error:
+				self.sense.load_image("res/error.png")
+				print "\nAn error has occured:\n"
+				print error
+				print "\nPress Enter to continue"
+				raw_input()				
+				self.sense.clear()
 		
 	def send_mail(self,t,p,h):
 		try:
@@ -63,25 +64,21 @@ class WeatherApp():
 			self.smtp.ehlo()
 			self.smtp.starttls()
 			self.smtp.login(self.sender, self.pwd)
-			self.message = self.message.format(username="Diego",
-					    usermail="diegogarcialozano95@gmail.com",
-					    username1="Diego",
+			self.message = self.message.format(username=self.user_logged['name'],
+					    usermail=self.user_logged['mail'],
+					    username1=self.user_logged['name'],
 					    temp = t,
 					    press = p,
 					    humid = h,
-					    wait = 5)
-			self.smtp.sendmail(self.sender, ["diegogarcialozano95@gmail.com"], self.message)
+					    wait = self.user_logged['wait'])
+			self.smtp.sendmail(self.sender, [self.user_logged['mail']], self.message)
 			self.smtp.quit()
 		except SMTPException:
 			print "Error: unable to send email"
 
-	def login(self,username,pattern):
-		raise Exception("Invalid credentials")
-
 	def record_weather(self):
 		self.logout = False
 		while self.logout == False:
-			wait = 5
 			timer = 0
 
 			temperature = self.sense.get_temperature()
@@ -90,7 +87,7 @@ class WeatherApp():
 
 			self.send_mail(temperature,pressure,humidity)
 
-			while self.logout == False and timer < wait:
+			while self.logout == False and timer < self.user_logged['wait']:
 				self.animation()
 				timer += 1
 		self.logout = False
@@ -103,7 +100,7 @@ class WeatherApp():
 		time.sleep(0.25)
 		self.sense.load_image("res/cloud3.png")
 		time.sleep(0.25)
-		self.sense.load_image("res/cloud2.png")
+		self.sense.load_image("res/cloud4.png")
 		time.sleep(0.25)
 
 	def sigint_handler(self, signum, frame):
@@ -113,7 +110,24 @@ class WeatherApp():
 		for i in range(len(pattern)):
 			pattern[i] = "Y" if pattern[i] == True else "N"
 		return ''.join(pattern)
+
+	def login(self, username, pattern):
+		cnx = mysql.connector.connect(user='root', password='p@ssword',host='127.0.0.1',database='weather_app')
+		query = ("SELECT name,email,record_time FROM users WHERE users.name = '{}' AND users.pattern = '{}';".format(username,pattern))
+		cursor = cnx.cursor()
+		cursor.execute(query)
+		result = []
+		for row in cursor:
+			result.append(row)
+		cursor.close()
+		cnx.close()
+		if len(result) > 0:
+			self.user_logged = { 'name': result[0][0],
+					     'mail': result[0][1],
+					     'wait': result[0][2] }
+		else:
+			raise Exception("User not found")
 		
 if __name__ == "__main__":
 	weather_app = WeatherApp()
-	
+
