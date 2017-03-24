@@ -1,0 +1,11 @@
+From: From Raspberry Weather App <diegogarcialozano95@gmail.com>
+To: To {username} <{usermail}>
+Subject: Weather App Report
+
+Hello {username1} ! Here is the weather data that was recorded:
+
+	Temperature: {temp:.2f} Celsius
+	Pressure: {press:.2f} Milibars
+	Humidity: {humid:.2f} %
+
+Next Report will be in {wait} seconds.
