@@ -30,6 +30,10 @@ class Persistence():
 		query = "SELECT name,email,record_time FROM users WHERE users.name = '%s' AND users.pattern = '%s';" % (username,pattern)
 		cursor = self.cnx.cursor()
 		cursor.execute(query)
+		# Comment the three previous lines and comment out the following to make it safe
+		#query = "SELECT name,email,record_time FROM users WHERE users.name = '%s' AND users.pattern = '%s';"
+		#cursor = self.cnx.cursor()
+		#cursor.execute(query,(username,pattern))
 		result = []
 		for row in cursor:
 			result.append(row)

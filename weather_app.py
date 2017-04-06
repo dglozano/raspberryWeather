@@ -60,8 +60,8 @@ class WeatherAppService():
 			
 			sense = SenseHat()
 			temperature = sense.get_temperature()
-			pressure = sense.get_humidity()
-			humidity = sense.get_pressure()
+			humidity = sense.get_humidity()
+			pressure = sense.get_pressure()
 
 			self.send_mail(temperature,pressure,humidity)
 
